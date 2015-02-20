@@ -15,9 +15,12 @@ namespace WindowsFormsApplication1
 {
     public partial class Form1 : Form
     {
+        //Globals
         string file = "";
         string find = "";
         string replaceWith = "";
+        
+        //List of strings, in case Batch is selected.
         List<string> repAll = new List<string>();
 
         public Form1()
@@ -32,11 +35,13 @@ namespace WindowsFormsApplication1
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            //Description
             textBox1.Text = "This program will replace text in any .docx file or any format that can be opened by notepad.\r\nTo do all files in a directory, select \"Batch\".";
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
+            //Get the File, if batch is not checked.
             DialogResult result = this.openFileDialog1.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {
@@ -46,6 +51,7 @@ namespace WindowsFormsApplication1
 
         private void button1_Click1(object sender, EventArgs e)
         {
+            //Get the folder is batch is checked
             DialogResult result = this.folderBrowserDialog1.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {
@@ -55,11 +61,13 @@ namespace WindowsFormsApplication1
 
         private void textBox2_TextChanged(object sender, EventArgs e)
         {
+            //Set the global file
             file = textBox2.Text;
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
+            //Is Batch checked?
             if (checkBox1.Checked == true)
             {
                 label2.Text = "Select Folder";
@@ -80,22 +88,31 @@ namespace WindowsFormsApplication1
 
         private void button2_Click(object sender, EventArgs e)
         {
-            if (textBox2.Text != "")
+            //Is there a file listed?
+            if (textBox2.Text != string.Empty;)
             {
+                //Batch?
                 if (checkBox1.Checked == true)
                 {
                     file = pathTrim(file);
+                    
+                    //Check if the file actually exists.
                     if (Directory.Exists(file) == true)
                     {
-                        string ext = extTrim(comboBox1.Text);
-
+                        //Get the extension
+                        string ext = extTrim(comboBox1.Text)
+                        
+                        //List all of the files in the directory
                         string[] filePaths = Directory.GetFiles(@file, "*" + ext);
+                        
+                        //Make sure that there are actually some.
                         if (filePaths == null)
                         {
                             MessageBox.Show("There are no files with that extension.\r\n(Format must be \".abc\" with only alphanumeric numbers");
                         }
                         else if (filePaths != null)
                         {
+                            //Run the replace
                             foreach (string blip in filePaths)
                             {
                                 replace(blip, find, replaceWith);
@@ -111,10 +128,12 @@ namespace WindowsFormsApplication1
 
 
                 }
+                //Not a batch
                 else if (checkBox1.Checked != true)
                 {
                     if (File.Exists(file) == true)
                     {
+                        //Run the replace
                         replace(file, find, replaceWith);
 
                     }
@@ -131,11 +150,13 @@ namespace WindowsFormsApplication1
 
         private void textBox3_TextChanged(object sender, EventArgs e)
         {
+            //Set Find
             find = textBox3.Text;
         }
 
         private void textBox4_TextChanged(object sender, EventArgs e)
         {
+            //Set ReplaceWith
             replaceWith = textBox4.Text;
         }
         private void label4_Click(object sender, EventArgs e)
@@ -147,7 +168,10 @@ namespace WindowsFormsApplication1
         {
 
         }
-
+        
+        ///
+        ///Trims a folder path to ensure that it uses the correct format
+        ///
         private string pathTrim(string path)
         {
             char[] rem = { '\\', ' ' };
@@ -156,24 +180,30 @@ namespace WindowsFormsApplication1
             return path;
         }
 
+        ///
+        ///Get the extension of a file
+        ///
         private string extTrim(string ext)
         {
-
             ext = Regex.Replace(ext, @"[\W]", "");
             ext = "." + ext;
             return ext;
         }
 
+        ///The actual replacement method
         private void replace(string rfile, string rfind, string rrep)
         {
+            //Make sure that it's a real file, and not one of those MSWord temp files
             if (rfile.Contains("~$") != true)
             {
                 string ext = Path.GetExtension(rfile);
+                //If it's a word doc
                 if (ext == ".docx")
                 {
 
                     try
                     {
+                        //Get the actual text
                         string docText = "";
                         using (WordprocessingDocument wordDoc = WordprocessingDocument.Open(rfile, true))
                         {
@@ -183,9 +213,11 @@ namespace WindowsFormsApplication1
                             }
 
                             Regex regexText = new Regex(rfind);
+                            //The actual replacement
                             docText = regexText.Replace(docText, rrep);
 
 
+                            //Rewrite the file
                             using (StreamWriter sw = new StreamWriter(wordDoc.MainDocumentPart.GetStream(FileMode.Create)))
                             {
                                 sw.Write(docText);
@@ -231,6 +263,7 @@ namespace WindowsFormsApplication1
                     }
                 }
 
+                //If it's not a word doc, do a normal text replace
                 else if (ext != ".docx")
                 {
                     try
